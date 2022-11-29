@@ -1,8 +1,8 @@
 import * as fsPromises from 'fs/promises';
 import * as fs from 'fs';
 
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
