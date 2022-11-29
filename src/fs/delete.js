@@ -9,17 +9,11 @@ const _dirname = dirname(_filename);
 const PATH = '/files/fileToRemove.txt';
 
 const remove = async () => {
-    return await fsPromises.stat(`${_dirname}${PATH}`)
-        .then((stat) => {
-            if (stat.isFile()) {
-                return fsPromises.rm(`${_dirname}${PATH}`);
-            }
-
-            throw new Error('FS operation failed');
-        })
+    return await fsPromises.access(`${_dirname}${PATH}`, fsPromises.constants.F_OK)
+        .then(() => fsPromises.rm(`${_dirname}${PATH}`))
         .catch((error) => {
             if (error.code === 'ENOENT') {
-                throw new Error('FS operation failed');
+                console.error('FS operation failed');
             }
 
             console.error(error);
