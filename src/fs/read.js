@@ -1,24 +1,43 @@
-import * as fsPromises from 'fs/promises';
+import { access, constants, readFile } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-const _filename = fileURLToPath(import.meta.url);
-const _dirname = dirname(_filename);
+const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const PATH = '/files/fileToRead.txt';
 
-const read = async () => {
-    return await fsPromises.access(`${_dirname}${PATH}`, fsPromises.constants.R_OK)
-        .then(() => fsPromises.readFile(`${_dirname}${PATH}`, 'utf-8'))
-        .then((text) => console.log(text))
-        .catch((error) => {
-            if (error.code === 'ENOENT') {
-                console.error('FS operation failed');
-            }
+const isFileNotExists = async (path) => {
+    try {
+        await access(path, constants.F_OK);
 
-            console.error(error);
-        }); 
+        return false;
+    } catch {
+        return true;
+    }
+}
+
+const isFileNotReadable = async (path) => {
+    try {
+        await access(path, constants.R_OK);
+
+        return false;
+    } catch {
+        return true;
+    }
+}
+
+const read = async () => {
+    try {
+        if (await isFileNotExists(`${_dirname}${PATH}`)
+            || await isFileNotReadable(`${_dirname}${PATH}`)) { 
+            throw new Error('FS operation failed');
+        }
+
+        const text = await readFile(`${_dirname}${PATH}`, 'utf-8');
+        console.log(text);
+    } catch(error) {
+        console.error(error);
+    }
 };
 
 await read();

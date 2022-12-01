@@ -1,36 +1,35 @@
-import * as fsPromises from 'fs/promises';
+import { stat as prStat, readdir } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-const _filename = fileURLToPath(import.meta.url);
-const _dirname = dirname(_filename);
+const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
-const PATH = '/files';
+const DIR = '/files';
+
+const isDirExists = async (path) => {
+    try {
+        const stat = await prStat(path);
+
+        return stat.isDirectory();
+    } catch {
+        return false;
+    }
+}
 
 const list = async () => {
-    return await fsPromises.stat(`${_dirname}${PATH}`)
-        .then((stat) => {
-            if (stat.isDirectory()) {
-                return fsPromises.readdir(`${_dirname}${PATH}`);
-            }
-
+    try {
+        if (!(await isDirExists(`${_dirname}${DIR}`))) {
             throw new Error('FS operation failed');
-        })
-        .then((files) => {
-            if (files.length) {
-                return console.log(files);
-            }
-            
-            throw new Error('FS operation failed');
-        })
-        .catch((error) => {
-            if (error.code === 'ENOENT') {
-                console.error('FS operation failed');
-            }
+        }
 
-            console.error(error);
-        })
+        const files = await readdir(`${_dirname}${DIR}`);
+
+        if (files.length) {
+            console.log(files);
+        }
+    } catch (error) {
+        console.error(error);
+    }  
 };
 
 await list();

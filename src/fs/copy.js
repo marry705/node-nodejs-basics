@@ -1,47 +1,43 @@
-import * as fsPromises from 'fs/promises';
-import * as fs from 'fs';
+import { stat as prStat, mkdir, readdir, copyFile } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { join } from 'path';
 
-const _filename = fileURLToPath(import.meta.url);
-const _dirname = dirname(_filename);
+const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
-const PATH = '/files';
-const COPY_PATH = '/files_copy';
+const DIR = '/files';
+const COPY_DIR = '/files_copy';
+
+const isDirExists = async (path) => {
+    try {
+        const stat = await prStat(path);
+
+        return stat.isDirectory();
+    } catch {
+        return false;
+    }
+}
 
 const copy = async () => {
-    fs.stat(`${_dirname}${COPY_PATH}`, async (error, stat) => {
-        if (stat?.isDirectory()) {
+    try {
+        if (await isDirExists(`${_dirname}${COPY_DIR}`)
+            || !(await isDirExists(`${_dirname}${DIR}`))) {
             throw new Error('FS operation failed');
         }
 
-        if (error?.code === 'ENOENT') {
-            await fsPromises.stat(`${_dirname}${PATH}`)
-                .then((stat) => {
-                    if (stat.isDirectory()) {
-                        return fsPromises.mkdir(`${_dirname}${COPY_PATH}`);
-                    }
+        await mkdir(`${_dirname}${COPY_DIR}`);
+        const files = await readdir(`${_dirname}${DIR}`);
 
-                    throw new Error('path error');
-                })
-                .then(() => fsPromises.readdir(`${_dirname}${PATH}`))
-                .then((files) => Promise.all(
-                    files.map((file) => {
-                        const source = join(`${_dirname}${PATH}`, file);
-                        const destination = join(`${_dirname}${COPY_PATH}`, file);
-                        return fsPromises.copyFile(source, destination);
-                    })
-                ))
-                .catch((error) => {
-                    if (error.code === 'ENOENT') {
-                        throw new Error('FS operation failed');
-                    }
-
-                    console.log(error);
-                })
-        }
-    });
+        await Promise.allSettled(
+            files.map((file) => {
+                const source = join(`${_dirname}${DIR}`, file);
+                const destination = join(`${_dirname}${COPY_DIR}`, file);
+                copyFile(source, destination);
+            })
+        );
+    } catch (error) {
+        console.error(error);
+    }
 };
 
 copy();

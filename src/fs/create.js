@@ -1,26 +1,32 @@
-import * as fsPromises from 'fs/promises';
+import { constants, access, writeFile } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 
-const _filename = fileURLToPath(import.meta.url);
-const _dirname = dirname(_filename);
+const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const PATH = '/files/fresh.txt';
 const TEXT = 'I am fresh and young';
 
-const create = async () => {
-    return await fsPromises.access(`${_dirname}${PATH}`, fsPromises.constants.F_OK)
-        .then(() => {
-            throw new Error('FS operation failed');
-        })
-        .catch((error) => {
-            if (error.code === 'ENOENT') {
-                return fsPromises.writeFile(`${_dirname}${PATH}`, TEXT);
-            }
+const isFileExists = async (path) => {
+    try {
+        await access(path, constants.F_OK);
 
-            console.error(error);
-        });
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+const create = async () => {
+    try {
+        if (await isFileExists(`${_dirname}${PATH}`)) {
+            throw new Error('FS operation failed');
+        }
+
+        await writeFile(`${_dirname}${PATH}`, TEXT);
+    } catch (error) {
+        console.error(error);
+    }    
 };
 
 await create();
