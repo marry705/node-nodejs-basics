@@ -1,21 +1,12 @@
-import { constants, access, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
+import { isFileExists } from './existFunctions.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const PATH = '/files/fresh.txt';
 const TEXT = 'I am fresh and young';
-
-const isFileExists = async (path) => {
-    try {
-        await access(path, constants.F_OK);
-
-        return true;
-    } catch {
-        return false;
-    }
-}
 
 const create = async () => {
     try {

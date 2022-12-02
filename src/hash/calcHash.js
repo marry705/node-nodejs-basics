@@ -1,7 +1,7 @@
-import { access, constants } from 'fs/promises';
 import { createReadStream } from 'fs';
 
 import { fileURLToPath } from 'url';
+import { isFileReadable } from '../fs/existFunctions.js';
 
 const { createHash } = await import('crypto');
 
@@ -9,30 +9,9 @@ const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const PATH = '/files/fileToCalculateHashFor.txt';
 
-const isFileNotExists = async (path) => {
-    try {
-        await access(path, constants.F_OK);
-
-        return false;
-    } catch {
-        return true;
-    }
-}
-
-const isFileNotReadable = async (path) => {
-    try {
-        await access(path, constants.R_OK);
-
-        return false;
-    } catch {
-        return true;
-    }
-}
-
 const calculateHash = async () => {
     try {
-        if (await isFileNotExists(`${_dirname}${PATH}`)
-            || await isFileNotReadable(`${_dirname}${PATH}`)) { 
+        if (!(await isFileReadable(`${_dirname}${PATH}`))) { 
             throw new Error('FS operation failed');
         }
 

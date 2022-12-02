@@ -1,22 +1,13 @@
-import { access, constants, rename as prRename } from 'fs/promises';
+import { rename as prRename } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
+import { isFileExists } from './existFunctions.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const PATH = '/files/';
 const OLD_NAME = 'wrongFilename.txt';
 const NEW_NAME = 'properFilename.md';
-
-const isFileExists = async (path) => {
-    try {
-        await access(path, constants.F_OK);
-
-        return true;
-    } catch {
-        return false;
-    }
-}
 
 const rename = async () => {
     try {

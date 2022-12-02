@@ -1,22 +1,12 @@
-import { stat as prStat, mkdir, readdir, copyFile } from 'fs/promises';
+import { mkdir, readdir, copyFile } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
-import { join } from 'path';
+import { isDirExists } from './existFunctions.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const DIR = '/files';
 const COPY_DIR = '/files_copy';
-
-const isDirExists = async (path) => {
-    try {
-        const stat = await prStat(path);
-
-        return stat.isDirectory();
-    } catch {
-        return false;
-    }
-}
 
 const copy = async () => {
     try {
@@ -26,14 +16,10 @@ const copy = async () => {
         }
 
         await mkdir(`${_dirname}${COPY_DIR}`);
-        const files = await readdir(`${_dirname}${DIR}`);
+        const fileNames = await readdir(`${_dirname}${DIR}`);
 
         await Promise.allSettled(
-            files.map((file) => {
-                const source = join(`${_dirname}${DIR}`, file);
-                const destination = join(`${_dirname}${COPY_DIR}`, file);
-                copyFile(source, destination);
-            })
+            fileNames.map((file) => copyFile(`${_dirname}${DIR}/${file}`, `${_dirname}${COPY_DIR}/${file}`))
         );
     } catch (error) {
         console.error(error);

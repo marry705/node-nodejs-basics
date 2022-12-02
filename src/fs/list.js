@@ -1,20 +1,11 @@
-import { stat as prStat, readdir } from 'fs/promises';
+import { readdir } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
+import { isDirExists } from './existFunctions.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const DIR = '/files';
-
-const isDirExists = async (path) => {
-    try {
-        const stat = await prStat(path);
-
-        return stat.isDirectory();
-    } catch {
-        return false;
-    }
-}
 
 const list = async () => {
     try {

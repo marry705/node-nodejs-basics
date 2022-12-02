@@ -1,24 +1,15 @@
-import { access, constants, rm } from 'fs/promises';
+import { rm } from 'fs/promises';
 
 import { fileURLToPath } from 'url';
+import { isFileExists } from './existFunctions.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
 const PATH = '/files/fileToRemove.txt';
 
-const isFileExists = async (path) => {
-    try {
-        await access(path, constants.F_OK);
-
-        return true;
-    } catch {
-        return false;
-    }
-}
-
 const remove = async () => {
     try {
-        if (!await isFileExists(`${_dirname}${PATH}`)) {
+        if (!(await isFileExists(`${_dirname}${PATH}`))) {
             throw new Error('FS operation failed');
         }
 
